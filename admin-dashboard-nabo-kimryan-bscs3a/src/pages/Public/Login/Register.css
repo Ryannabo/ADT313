@@ -1,3 +1,24 @@
+.Register{
+  background-color: #252424;
+}
+
+.web-title {
+  font-family: "Oswald", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 200vb; 
+  font-style: normal;
+  font-size: 10vb;
+  margin-top: -200px;
+  color: aliceblue;
+}
+
+.login-label{
+  transform: translate(0px,-15px);
+  font-weight: 200%;
+  font-size: 30px;
+  margin-bottom: 0px;
+  margin-top: -40px;
+}
 
 .form-group2 {
   display: flex;

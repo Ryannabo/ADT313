@@ -56,8 +56,9 @@ function Register() {
       const res = await axios.post('/admin/register', data);
       console.log(res);
       localStorage.setItem('accessToken', res.data.access_token);
-      navigate('/main/dashboard');
+      navigate('/');
     } catch (e) {
+      window.alert('Registration failed!');
       console.log(e);
       setStatus('idle');
     }
@@ -66,10 +67,11 @@ function Register() {
   return (
     <div className='Register'>
       <div className='main-container'>
-        <h3>Register</h3>
+      <h1 className='web-title'>Le cinéma</h1>
         <form>
           <div className='form-container'>
             <div>
+            <h3 className='web-label'>Register</h3>
               <div className='form-group2'>
                 <label>First Name:</label>
                 <input

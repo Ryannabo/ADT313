@@ -60,7 +60,7 @@ function Login() {
       .catch((e) => {
         console.log(e);
         setStatus('idle');
-        // alert(e.response.data.message);
+        alert(e.response.data.message);
       });
   };
 
@@ -71,10 +71,11 @@ function Login() {
   return (
     <div className='Login'>
       <div className='main-container'>
-        <h3>Login</h3>
+        <h1 className='web-title'>Le cinéma</h1>
         <form>
           <div className='form-container'>
             <div>
+            <p className='login-label'>Login</p>
               <div className='form-group'>
                 <label>E-mail:</label>
                 <input
