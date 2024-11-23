@@ -1,0 +1,68 @@
+.Login{
+  background-color: #252424;
+}
+
+.web-title {
+  font-family: "Oswald", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 200vb; 
+  font-style: normal;
+  font-size: 10vb;
+  margin-top: -200px;
+  color: aliceblue;
+}
+
+.login-label{
+  transform: translate(0px,-15px);
+  font-weight: 200%;
+  font-size: 30px;
+  margin-bottom: 0px;
+  margin-top: -40px;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form-container {
+  padding: 4rem 2rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: aliceblue;
+}
+.form-container > div {
+  margin-bottom: 12px;
+}
+
+.form-group {
+  display: flex;
+}
+
+.form-group label {
+  width: 70px;
+  margin-right: 8px;
+  text-align: left;
+}
+.errors {
+  color: red;
+  font-size: 12px;
+}
+.submit-container {
+  margin-top: 12px;
+  text-align: center;
+}
+.register-container {
+  text-align: center;
+}
+.show-password {
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
