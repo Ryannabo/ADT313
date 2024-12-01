@@ -1,8 +1,11 @@
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import CastAndCrews from '../../../../components/CastAndCrews';
+import Videos from '../../../../components/Videos';
+import Photos from '../../../../components/Photos';
 import './Form.css';
-import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
   const [query, setQuery] = useState('');
@@ -11,30 +14,38 @@ const Form = () => {
   const [movie, setMovie] = useState(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  let { movieId } = useParams();
   const navigate = useNavigate();
+  let { movieId } = useParams();
 
   const handleSearch = useCallback(
     (page = 1) => {
-      axios({
-        method: 'get',
-        url: `https://api.themoviedb.org/3/search/movie?query=${query}&include_adult=true&language=en-US&page=${page}`,
-        headers: {
-          Accept: 'application/json',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YTdiNmUyNGJkNWRkNjhiNmE1ZWFjZjgyNWY3NGY5ZCIsIm5iZiI6MTcyOTI5NzI5Ny4wNzMzNTEsInN1YiI6IjY2MzhlZGM0MmZhZjRkMDEzMGM2NzM3NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZIX4EF2yAKl6NwhcmhZucxSQi1rJDZiGG80tDd6_9XI',
-        },
-      })
-        .then((response) => {
-          setSearchedMovieList(response.data.results);
-          setTotalPages(response.data.total_pages);
-          setCurrentPage(page);
-          console.log(response.data.results);
-        })
-        .catch((error) => {
-          console.error('Error fetching movie data:', error);
-        });
-    },
+      if (!query.trim()) {
+        alert('Please enter a title of a movie.'); 
+        return; 
+      }
+
+    axios({
+      method: 'get',
+      url: `https://api.themoviedb.org/3/search/movie?query=${query}&include_adult=false&language=en-US&page=1`,
+      headers: {
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YTdiNmUyNGJkNWRkNjhiNmE1ZWFjZjgyNWY3NGY5ZCIsIm5iZiI6MTcyOTI5NzI5Ny4wNzMzNTEsInN1YiI6IjY2MzhlZGM0MmZhZjRkMDEzMGM2NzM3NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZIX4EF2yAKl6NwhcmhZucxSQi1rJDZiGG80tDd6_9XI',
+      },
+    }).then((response) => {
+      if (response.data.results.length === 0) {
+        alert("No titles found."); 
+      } else {
+      setSearchedMovieList(response.data.results);
+      setTotalPages(response.data.total_pages);
+      setCurrentPage(page);
+      console.log(response.data.results);
+      }
+    })
+    .catch((error) => {
+      console.error('Error fetching movie data:', error);
+    });
+  }, 
     [query]
   );
 
@@ -63,7 +74,7 @@ const Form = () => {
       const method = movieId ? 'patch' : 'post';
       const url = movieId ? `/movies/${movieId}` : '/movies';
 
-      const request= axios({
+      const request = axios({
         method: method,
         url: url,
         data: data,
@@ -105,11 +116,9 @@ const Form = () => {
         };
         setSelectedMovie(tempData);
         console.log(response.data);
-
       });
     }
   }, [movieId]);
-
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -129,23 +138,22 @@ const Form = () => {
 
       {movieId === undefined && (
         <>
-          <div className="search-container">
+          <div className='search-container'>
             Search Movie:{' '}
             <input
-              type="text"
+              type='text'
               onChange={(event) => setQuery(event.target.value)}
             />
-            <button type="button" onClick={() => handleSearch(1)}>
+            <button type='button' onClick={() => handleSearch()}>
               Search
             </button>
-            <div className="searched-movie">
+            <div className='searched-movie'>
               {searchedMovieList.map((movie) => (
-                <p key={movie.id} onClick={() => handleSelectMovie(movie)}>
-                  {movie.original_title}
+                <p onClick={() => handleSelectMovie(movie)}>
+                  {movie.original_title || "No Title Available"}
                 </p>
               ))}
             </div>
-
             <div className="pagination">
               <button onClick={handlePrevPage} disabled={currentPage === 1}>
                 Previous
@@ -165,9 +173,9 @@ const Form = () => {
         </>
       )}
 
-      <div className="container">
+      <div className='container'>
         <form>
-          {selectedMovie && (
+        {selectedMovie && (
             <img
               className="poster-image"
               src={`https://image.tmdb.org/t/p/original/${selectedMovie.poster_path}`}
@@ -220,10 +228,27 @@ const Form = () => {
           </button>
         </form>
       </div>
+      
+      {movieId !== undefined && selectedMovie && (
+        <div>
+        <hr />
+        <nav>
+          <ul className="tabs">
+            <li onClick={() => navigate(`/main/movies/form/${movieId}/cast-and-crews`)}>Cast & Crews</li>
+            <li onClick={() => navigate(`/main/movies/form/${movieId}/videos`)}>Videos</li>
+            <li onClick={() => navigate(`/main/movies/form/${movieId}/photos`)}>Photos</li>
+          </ul>
+        </nav>
+
+        <Routes>
+          <Route path="cast-and-crews" element={<CastAndCrews />} />
+          <Route path="videos" element={<Videos />} />
+          <Route path="photos" element={<Photos />} />
+        </Routes>
+      </div>
+    )}
     </>
   );
 };
 
 export default Form;
-
-

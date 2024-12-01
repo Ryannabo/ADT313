@@ -2,12 +2,11 @@ import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import './Main.css';
 
-function Main() {
+function MainClient() {
   const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
-    navigate('/');
   };
 
   useEffect(() => {
@@ -24,15 +23,18 @@ function Main() {
       <div className='container'>
         <div className='navigation'>
           <ul>
-            {/* <li>
-              <a href='/main/dashboard'>Dashboard</a>
-            </li> */}
             <li>
-              <a href='/main/movies'>Movies</a>
+              <a onClick={() => navigate('/')}>Movies</a>
             </li>
-            <li className='logout'>
-              <a onClick={handleLogout}>Logout</a>
-            </li>
+            {accessToken ? (
+              <li className='logout'>
+                <a onClick={handleLogout}>Logout</a>
+              </li>
+            ) : (
+              <li className='login'>
+                <a onClick={() => alert('Go to Login page')}>Login</a>
+              </li>
+            )}
           </ul>
         </div>
         <div className='outlet'>
@@ -43,4 +45,4 @@ function Main() {
   );
 }
 
-export default Main;
+export default MainClient;
