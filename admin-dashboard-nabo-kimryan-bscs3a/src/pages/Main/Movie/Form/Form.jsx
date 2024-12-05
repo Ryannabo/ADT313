@@ -1,252 +1,573 @@
-import axios from 'axios';
-import { useCallback, useEffect, useState } from 'react';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
-import { Route, Routes } from 'react-router-dom';
-import CastAndCrews from '../../../../components/CastAndCrews';
-import Videos from '../../../../components/Videos';
-import Photos from '../../../../components/Photos';
-import './Form.css';
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import "./Form.css";
 
 const Form = () => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [searchedMovieList, setSearchedMovieList] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(undefined);
-  const [movie, setMovie] = useState(undefined);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    overview: "",
+    popularity: "",
+    releaseDate: "",
+    voteAverage: "",
+  });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [videos, setVideos] = useState([]);
+  const [photos, setPhotos] = useState([]);
+  const [cast, setCast] = useState([]);
+  const [newCastMember, setNewCastMember] = useState({ name: "", character: "", profile_path: "" });
+  const [editingCastMember, setEditingCastMember] = useState(null);
+
+  const { movieId } = useParams();
   const navigate = useNavigate();
-  let { movieId } = useParams();
 
-  const handleSearch = useCallback(
-    (page = 1) => {
-      if (!query.trim()) {
-        alert('Please enter a title of a movie.'); 
-        return; 
-      }
+  const handleSearch = useCallback(() => {
+    setError("");
+    if (!query.trim()) {
+      setError("Please enter a search term");
+      return;
+    }
 
-    axios({
-      method: 'get',
-      url: `https://api.themoviedb.org/3/search/movie?query=${query}&include_adult=false&language=en-US&page=1`,
+    setIsLoading(true);
+    setSearchedMovieList([]);
+
+    axios.get(`https://api.themoviedb.org/3/search/movie?query=${query}&include_adult=false&language=en-US&page=${currentPage}`, {
       headers: {
-        Accept: 'application/json',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YTdiNmUyNGJkNWRkNjhiNmE1ZWFjZjgyNWY3NGY5ZCIsIm5iZiI6MTcyOTI5NzI5Ny4wNzMzNTEsInN1YiI6IjY2MzhlZGM0MmZhZjRkMDEzMGM2NzM3NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZIX4EF2yAKl6NwhcmhZucxSQi1rJDZiGG80tDd6_9XI',
+        Accept: "application/json",
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',
       },
-    }).then((response) => {
-      if (response.data.results.length === 0) {
-        alert("No titles found."); 
-      } else {
-      setSearchedMovieList(response.data.results);
-      setTotalPages(response.data.total_pages);
-      setCurrentPage(page);
-      console.log(response.data.results);
-      }
     })
-    .catch((error) => {
-      console.error('Error fetching movie data:', error);
-    });
-  }, 
-    [query]
-  );
+      .then((response) => {
+        if (response.data.results.length === 0) {
+          setError("No movies found matching your search");
+        } else {
+          setSearchedMovieList(response.data.results);
+          setTotalPages(response.data.total_pages);
+        }
+      })
+      .catch(() => {
+        setError("Unable to search movies at this time. Please try again later.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [query, currentPage]);
+
+  useEffect(() => {
+    if (currentPage > 1) {
+      handleSearch();
+    }
+  }, [currentPage, handleSearch]);
 
   const handleSelectMovie = (movie) => {
     setSelectedMovie(movie);
+    setFormData({
+      title: movie.original_title,
+      overview: movie.overview,
+      popularity: movie.popularity,
+      releaseDate: movie.release_date,
+      voteAverage: movie.vote_average,
+      
+    });
+    setError("");
+
+      // Fetch photos (backdrops)
+      axios
+      .get(`https://api.themoviedb.org/3/movie/${movie.id}/images`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',
+        },
+      })
+      .then((response) => {
+        setPhotos(response.data.photos)
+      })
+      .catch(() => {
+        setError("Unable to load photos. Please try again later.");
+      });
+
+
+    // Fetch Videos
+    axios.get(`https://api.themoviedb.org/3/movie/${movie.id}/videos?language=en-US`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',
+      },
+    })
+    .then(response => {
+      setVideos(response.data.results);
+    })
+    .catch(() => {
+      setError("Unable to load videos. Please try again later.");
+    });
+
+    // Fetch Cast
+    axios.get(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',
+      },
+    })
+    .then(response => {
+      setCast(response.data.cast);
+    })
+    .catch(() => {
+      setError("Unable to load cast information. Please try again later.");
+    });
   };
 
-  const handleSave = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    console.log(accessToken);
-    if (selectedMovie === undefined) {
-      alert('Please search and select a movie.');
-    } else {
-      const data = {
-        tmdbId: selectedMovie.id,
-        title: selectedMovie.title || selectedMovie.original_title,
-        overview: selectedMovie.overview,
-        popularity: selectedMovie.popularity,
-        releaseDate: selectedMovie.release_date,
-        voteAverage: selectedMovie.vote_average,
-        backdropPath: `https://image.tmdb.org/t/p/original/${selectedMovie.backdrop_path}`,
-        posterPath: `https://image.tmdb.org/t/p/original/${selectedMovie.poster_path}`,
-        isFeatured: 0,
-      };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    setError("");
+  };
 
-      const method = movieId ? 'patch' : 'post';
-      const url = movieId ? `/movies/${movieId}` : '/movies';
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setCurrentPage(1);
+      handleSearch();
+    }
+  };
 
-      const request = axios({
-        method: method,
-        url: url,
+  const validateForm = () => {
+    const errors = [];
+    if (!formData.title) errors.push("Title is required");
+    if (!formData.overview) errors.push("Overview is required");
+    if (!formData.releaseDate) errors.push("Release date is required");
+    if (!formData.popularity) errors.push("Popularity is required");
+    if (!formData.voteAverage) errors.push("Vote average is required");
+    if (!selectedMovie) errors.push("Please select a movie from search results");
+    return errors;
+  };
+
+  const handleSave = async () => {
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(", "));
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      setError("You must be logged in to perform this action");
+      setIsLoading(false);
+      return;
+    }
+
+    const data = {
+      tmdbId: selectedMovie.id,
+      title: formData.title,
+      overview: formData.overview,
+      popularity: parseFloat(formData.popularity),
+      releaseDate: formData.releaseDate,
+      voteAverage: parseFloat(formData.voteAverage),
+      backdropPath: `https://image.tmdb.org/t/p/original/${selectedMovie.backdrop_path}`,
+      posterPath: `https://image.tmdb.org/t/p/original/${selectedMovie.poster_path}`,
+      isFeatured: 0,
+    };
+
+    try {
+      await axios({
+        method: movieId ? "patch" : "post",
+        url: movieId ? `/movies/${movieId}` : "/movies",
         data: data,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
-        .then((saveResponse) => {
-          console.log(saveResponse);
-          alert('Success');
-          navigate('/main/movies');
-        })
-        .catch((error) => {
-          console.log(error)
-          alert(error)
-        });
+      });
+      navigate("/main/movies");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Unable to save the movie. Please try again later.";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (e, field) => {
-    setSelectedMovie({
-      ...selectedMovie,
-      [field]: e.target.value,
-    });
+  const handleAddCastMember = async (newMember) => {
+    try {
+      const response = await axios.post(`/movies/${selectedMovie.id}/cast`, newMember, {
+        headers: {
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc`,
+        },
+      });
+      setCast((prevCast) => [...prevCast, response.data]);
+    } catch (error) {
+      setError("Unable to add cast member. Please try again later.");
+    }
   };
+
+  const handleUpdateCastMember = async () => {
+    if (editingCastMember) {
+      const updatedMember = {
+        id: editingCastMember.id,
+        name: newCastMember.name,
+        character: newCastMember.character,
+        profile_path: newCastMember.profile_path,
+      };
+      // Proceed with the update logic
+    }
+  };
+
+  const handleDeleteCastMember = async (memberId) => {
+    console.log("Attempting to delete cast member with ID:", memberId);
+    console.log("Selected movie ID:", selectedMovie.id);
+    try {
+      await axios.delete(`/movies/${selectedMovie.id}/cast/${memberId}`, {
+        headers: {
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc`,
+        },
+      });
+      setCast((prevCast) => prevCast.filter(member => member.id !== memberId));
+    } catch (error) {
+      console.error("Error deleting cast member:", error);
+      setError("Unable to delete cast member. Please try again later.");
+    }
+  };
+
+  const handleUpdate = handleSave;
 
   useEffect(() => {
     if (movieId) {
-      axios.get(`/movies/${movieId}`).then((response) => {
-        setMovie(response.data);
-        const tempData = {
-          id: response.data.tmdbId,
-          original_title: response.data.title,
-          overview: response.data.overview,
-          popularity: response.data.popularity,
-          poster_path: response.data.posterPath,
-          release_date: response.data.releaseDate,
-          vote_average: response.data.voteAverage,
-        };
-        setSelectedMovie(tempData);
-        console.log(response.data);
+      setIsLoading(true);
+      setError("");
+  
+      // Fetch Movie Details
+      axios.get(`/movies/${movieId}`)
+        .then((response) => {
+          const movieData = response.data;
+          setSelectedMovie({
+            id: movieData.tmdbId,
+            original_title: movieData.title,
+            overview: movieData.overview,
+            popularity: movieData.popularity,
+            poster_path: movieData.posterPath.replace("https://image.tmdb.org/t/p/original/", ""),
+            release_date: movieData.releaseDate,
+            vote_average: movieData.voteAverage,
+          });
+          setFormData({
+            title: movieData.title,
+            overview: movieData.overview,
+            popularity: movieData.popularity,
+            releaseDate: movieData.releaseDate,
+            voteAverage: movieData.voteAverage,
+          });
+  
+          // Fetch Videos
+          return axios.get(`https://api.themoviedb.org/3/movie/${movieData.tmdbId}/videos?language=en-US`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc', // Replace with actual API key
+            },
+          });
+        })
+        .then(response => {
+          setVideos(response.data.results);  // Set the videos data
+        })
+        .catch(() => {
+          setError("Unable to load movie details or related information. Please try again later.");
+        });
+  
+      // Fetch Cast Information
+      axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',  // Replace with actual API key
+        },
+      })
+      .then(response => {
+        setCast(response.data.cast);  // Set the cast data
+      })
+      .catch(() => {
+        setError("Unable to load cast information. Please try again later.");
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
     }
   }, [movieId]);
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      handleSearch(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      handleSearch(currentPage + 1);
-    }
-  };
+  
 
   return (
     <>
-      <h1>{movieId !== undefined ? 'Edit ' : 'Create '} Movie</h1>
+      <h1>{movieId !== undefined ? "Edit" : "Create"} Movie</h1>
+
+      {error && <div className="error-message">{error}</div>}
+      {isLoading && <div className="loading-message">Loading...</div>}
 
       {movieId === undefined && (
         <>
-          <div className='search-container'>
-            Search Movie:{' '}
+          <div className="search-container">
+            Search Movie:{" "}
             <input
-              type='text'
-              onChange={(event) => setQuery(event.target.value)}
+              type="text"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setError("");
+              }}
+              onKeyPress={handleKeyPress}
+              placeholder="Enter movie title..."
+              disabled={isLoading}
             />
-            <button type='button' onClick={() => handleSearch()}>
-              Search
+            <button className="search-button"
+              type="button"
+              onClick={() => {
+                setCurrentPage(1);
+                handleSearch();
+              }}
+              disabled={isLoading || !query.trim()}
+            >
+              {isLoading ? "Searching..." : "Search"}
             </button>
-            <div className='searched-movie'>
+            <div className="searched-movie">
               {searchedMovieList.map((movie) => (
-                <p onClick={() => handleSelectMovie(movie)}>
-                  {movie.original_title || "No Title Available"}
+                <p
+                  key={movie.id}
+                  onClick={() => handleSelectMovie(movie)}
+                  className={selectedMovie?.id === movie.id ? "selected" : ""}
+                >
+                  {movie.original_title}
                 </p>
               ))}
             </div>
-            <div className="pagination">
-              <button onClick={handlePrevPage} disabled={currentPage === 1}>
-                Previous
-              </button>
-              <span>
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
+            {totalPages > 1 && (
+             <div className="pagination">
+             <button
+               className="pagination-button"
+               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+               disabled={currentPage === 1 || isLoading}
+             >
+               Previous
+             </button>
+             <span>
+               Page {currentPage} of {totalPages}
+             </span>
+             <button
+               className="pagination-button"
+               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+               disabled={currentPage === totalPages || isLoading}
+             >
+               Next
+             </button>
+           </div>
+
+            )}
           </div>
           <hr />
         </>
       )}
 
-      <div className='container'>
-        <form>
+      <div className="container">
+        <form onSubmit={(e) => e.preventDefault()}>
         {selectedMovie && (
-            <img
-              className="poster-image"
-              src={`https://image.tmdb.org/t/p/original/${selectedMovie.poster_path}`}
-              alt="Movie Poster"
-            />
-          )}
-          <div className="field">
-            Title:
-            <input
-              type="text"
-              value={selectedMovie ? selectedMovie.original_title : ''}
-              onChange={(e) => handleInputChange(e, 'original_title')}
-            />
+        <div className="movie-details">
+          <img
+            className="poster-image"
+            src={`https://image.tmdb.org/t/p/original/${selectedMovie.poster_path}`}
+            alt={formData.title}
+        />
+    <div className="form-fields">
+      <div className="field">
+        <label htmlFor="title">Title:</label>
+        <input
+          type="text"
+          name="title"
+          id="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="overview">Overview:</label>
+        <textarea
+          className="overview"
+          rows={10}
+          name="overview"
+          id="overview"
+          value={formData.overview}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="popularity">Popularity:</label>
+        <input
+          type="number"
+          name="popularity"
+          id="popularity"
+          value={formData.popularity}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          step="0.1"
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="releaseDate">Release Date:</label>
+        <input
+          type="date"
+          name="releaseDate"
+          id="releaseDate"
+          value={formData.releaseDate}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="voteAverage">Vote Average:</label>
+        <input
+          type="number"
+          name="voteAverage"
+          id="voteAverage"
+          value={formData.voteAverage}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          step="0.1"
+        />
+      </div>
+    </div>
+  </div>
+)}
+          {selectedMovie && (
+  <>
+    <h2>Videos</h2>
+    <div className="videos">
+      {videos.length > 0 ? (
+        videos.map(video => (
+          <div key={video.id} className="video-item">
+            <h3>{video.name}</h3>
+            <iframe
+              src={`https://www.youtube.com/embed/${video.key}`}
+              title={video.name}
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
           </div>
-          <div className="field">
-            Overview:
-            <textarea
-              rows={10}
-              value={selectedMovie ? selectedMovie.overview : ''}
-              onChange={(e) => handleInputChange(e, 'overview')}
-            />
-          </div>
-          <div className="field">
-            Popularity:
-            <input
-              type="text"
-              value={selectedMovie ? selectedMovie.popularity : ''}
-              onChange={(e) => handleInputChange(e, 'popularity')}
-            />
-          </div>
-          <div className="field">
-            Release Date:
-            <input
-              type="text"
-              value={selectedMovie ? selectedMovie.release_date : ''}
-              onChange={(e) => handleInputChange(e, 'release_date')}
-            />
-          </div>
-          <div className="field">
-            Vote Average:
-            <input
-              type="text"
-              value={selectedMovie ? selectedMovie.vote_average : ''}
-              onChange={(e) => handleInputChange(e, 'vote_average')}
-            />
-          </div>
+        ))
+      ) : (
+        <p>No videos available.</p>
+      )}
+    </div>
 
-          <button type="button" onClick={handleSave}>
-            Save
-          </button>
+    <h2>Cast</h2>
+    <div className="cast">
+  <h2>Cast</h2>
+  {cast.length > 0 ? (
+  cast.map(member => (
+    <div key={member.id} className="cast-item">
+      <h3>{member.name}</h3>
+      <p>Character: {member.character}</p>
+      {member.profile_path && (
+        <img
+          src={`https://image.tmdb.org/t/p/w500/${member.profile_path}`}
+          alt={member.name}
+        />
+      )}
+      <button onClick={() => {
+        setEditingCastMember(member);
+        setNewCastMember({ name: member.name, character: member.character, profile_path: member.profile_path });
+      }}>Edit</button>
+      <button onClick={() => handleDeleteCastMember(member.id)}>Delete</button> {/* Pass member.id here */}
+    </div>
+  ))
+) : (
+  <p>No cast information available.</p>
+)}
+
+  <h3>{editingCastMember ? "Edit Cast Member" : "Add Cast Member"}</h3>
+  <form onSubmit={(e) => {
+    e.preventDefault();
+    if (editingCastMember) {
+      handleUpdateCastMember({ ...editingCastMember, ...newCastMember });
+      setEditingCastMember(null);
+    } else {
+      handleAddCastMember(newCastMember);
+    }
+    setNewCastMember({ name: "", character: "", profile_path: "" });
+  }}>
+    <div>
+      <label>Name:</label>
+      <input
+        type="text"
+        value={newCastMember.name}
+        onChange={(e) => setNewCastMember({ ...newCastMember, name: e.target.value })}
+        required
+      />
+    </div>
+    <div>
+      <label>Character:</label>
+      <input
+        type="text"
+        value={newCastMember.character}
+        onChange={(e) => setNewCastMember({ ...newCastMember, character: e.target.value })}
+        required
+      />
+    </div>
+    <div>
+      <label>Profile Path:</label>
+      <input
+        type="text"
+        value={newCastMember.profile_path}
+        onChange={(e) => setNewCastMember({ ...newCastMember, profile_path: e.target.value })}
+      />
+    </div>
+    <button type="submit">{editingCastMember ? "Update" : "Add"}</button>
+  </form>
+</div>
+    <div className="movie-photos">
+                <h3>Photos:</h3>
+                <div className="photo-grid">
+                {photos?.length > 0 ? (
+                  photos.map((photo, index) => (
+                    <img
+                      key={index}
+                      src={`https://image.tmdb.org/t/p/original/${photo.backdrop_path}`}
+                      alt={photo.title}
+                      className="movie-photo"
+                    />
+                  ))
+                ) : (
+                  <p>No photos available.</p>
+                )}
+                </div>
+              </div>
+  </>
+)}
+          <div className="button-container">
+            <button className="btn btn-save"
+              type="button"
+              onClick={movieId ? handleUpdate : handleSave}
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save"}
+            </button>
+            <button className="cancel"
+              type="button"
+              onClick={() => navigate("/main/movies")}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
-      
-      {movieId !== undefined && selectedMovie && (
-        <div>
-        <hr />
-        <nav>
-          <ul className="tabs">
-            <li onClick={() => navigate(`/main/movies/form/${movieId}/cast-and-crews`)}>Cast & Crews</li>
-            <li onClick={() => navigate(`/main/movies/form/${movieId}/videos`)}>Videos</li>
-            <li onClick={() => navigate(`/main/movies/form/${movieId}/photos`)}>Photos</li>
-          </ul>
-        </nav>
-
-        <Routes>
-          <Route path="cast-and-crews" element={<CastAndCrews />} />
-          <Route path="videos" element={<Videos />} />
-          <Route path="photos" element={<Photos />} />
-        </Routes>
-      </div>
-    )}
     </>
   );
 };

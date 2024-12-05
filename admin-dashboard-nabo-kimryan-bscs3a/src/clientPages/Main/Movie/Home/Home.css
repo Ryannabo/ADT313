@@ -1,11 +1,11 @@
 .featured-movie-container {
+    margin: 0;
 }
 
 
 .main-container {
   width: 100%;
   height: fit-content;
-
 }
 
 .page-title {
