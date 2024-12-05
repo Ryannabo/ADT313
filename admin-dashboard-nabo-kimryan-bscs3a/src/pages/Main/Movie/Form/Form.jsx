@@ -20,7 +20,9 @@ const Form = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [videos, setVideos] = useState([]);
   const [photos, setPhotos] = useState([]);
-  const [cast, setCast] = useState([]);
+  const [cast, setCast] = useState({
+    
+  });
   const [newCastMember, setNewCastMember] = useState({ name: "", character: "", profile_path: "" });
   const [editingCastMember, setEditingCastMember] = useState(null);
 
@@ -73,7 +75,6 @@ const Form = () => {
       popularity: movie.popularity,
       releaseDate: movie.release_date,
       voteAverage: movie.vote_average,
-      
     });
     setError("");
 
@@ -108,19 +109,41 @@ const Form = () => {
     });
 
     // Fetch Cast
-    axios.get(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`, {
+    axios.get(`https://api.themoviedb.org/3/movie/${selectedMovie.id}/credits?language=en-US`, {
       headers: {
         Accept: "application/json",
         Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc',
       },
     })
     .then(response => {
-      setCast(response.data.cast);
+      if (response.data && response.data.cast) {
+        setCast(response.data.cast);
+      } else {
+        setError("No cast information available.");
+      }
     })
     .catch(() => {
       setError("Unable to load cast information. Please try again later.");
     });
   };
+
+  useEffect(() => {
+    if (selectedMovie) {
+      // Fetch Cast
+      axios.get(`https://api.themoviedb.org/3/movie/${selectedMovie.id}/credits?language=en-US`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc', // Replace with your actual API key
+        },
+      })
+      .then(response => {
+        setCast(response.data.cast);
+      })
+      .catch(() => {
+        setError("Unable to load cast information. Please try again later.");
+      });
+    }
+  }, [selectedMovie]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -223,18 +246,38 @@ const Form = () => {
   };
 
   const handleDeleteCastMember = async (memberId) => {
-    console.log("Attempting to delete cast member with ID:", memberId);
-    console.log("Selected movie ID:", selectedMovie.id);
+    if (!selectedMovie || !memberId) {
+      setError("Invalid movie or cast member ID.");
+      return;
+    }
+  
     try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("You must be logged in to perform this action.");
+        return;
+      }
+  
+      // Attempt to delete the cast member
       await axios.delete(`/movies/${selectedMovie.id}/cast/${memberId}`, {
         headers: {
+          Accept: "application/json",
           Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc`,
         },
       });
+  
+      // Update the cast state to remove the deleted member
       setCast((prevCast) => prevCast.filter(member => member.id !== memberId));
     } catch (error) {
-      console.error("Error deleting cast member:", error);
-      setError("Unable to delete cast member. Please try again later.");
+      // Log the full error response for debugging
+      console.error("Error deleting cast member:", error.response ? error.response.data : error);
+      
+      // Set a user-friendly error message
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Unable to delete cast member. Please try again later.");
+      }
     }
   };
 
