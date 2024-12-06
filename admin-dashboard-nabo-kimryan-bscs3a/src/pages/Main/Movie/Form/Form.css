@@ -105,65 +105,47 @@ body {
 /* Cast Section */
 .cast {
   margin-top: 20px;
-  margin-left: 0px;
-  padding-right: 300px;
-  padding-left: -200px;
+  padding: 20px; /* Added padding for better spacing */
+  display: grid; /* Use grid layout for better alignment */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid */
+  gap: 20px; /* Space between cards */
 }
 
+/* Individual Cast Item Card */
 .cast-item {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 10px;
-  display:flexbox;
-  align-items: center;
-  color: black;
+  background: #3b3b3b; /* Dark background for the card */
+  border-radius: 10px; /* Rounded corners */
+  padding: 15px; /* Padding inside the card */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+  display: flex; /* Flexbox for alignment */
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center items horizontally */
+  color: #f0f0f0; /* Light text color */
+}
+
+.cast-item:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); /* Enhanced shadow on hover */
 }
 
 .cast-item img {
-  width: 100px;
-  height: auto;
-  border-radius: 10%;
-  margin-right: 100px;
+  width: 100%; /* Full width of the card */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 10px; /* Rounded corners for the image */
+  margin-bottom: 10px; /* Space below the image */
 }
 
 .cast-item h3 {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.2em; /* Slightly larger font size */
+  text-align: center; /* Center text */
 }
 
 .cast-item p {
   margin: 5px 0;
-}
-
-/* Buttons */
-.button-container {
-  display: flexbox;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.btn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn:hover {
-  background-color: #0056b3;
-}
-
-.cancel {
-  background-color: #dc3545;
-}
-
-.cancel:hover {
-  background-color: #c82333;
+  text-align: center; /* Center text */
+  font-size: 0.9em; /* Smaller font size for description */
 }
 
 /* Photos Section */
@@ -192,4 +174,49 @@ body {
 .loading-message {
   color: #007bff;
   margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 2em;
+  color: #61dafb;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h3 {
+  font-size: 1.5em;
+  color: #f0f0f0;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: 500;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Scrollbar for WebKit browsers (Chrome, Safari) */
+.searched-movie::-webkit-scrollbar {
+  width: 12px; /* Width of the scrollbar */
+}
+
+.searched-movie::-webkit-scrollbar-track {
+  background: #f0f0f0; /* Background of the scrollbar track */
+  border-radius: 10px; /* Rounded corners for the track */
+}
+
+.searched-movie::-webkit-scrollbar-thumb {
+  background: maroon; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+.searched-movie::-webkit-scrollbar-thumb:hover {
+  background: #a00000; /* Darker color on hover */
+}
+
+/* Custom Scrollbar for Firefox */
+.searched-movie {
+  scrollbar-width: thin; /* Makes the scrollbar thinner */
+  scrollbar-color: maroon #f0f0f0; /* Thumb color and track color */
 }

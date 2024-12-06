@@ -1,74 +1,85 @@
-.Main {
-  display: flex;
-  overflow: hidden;
-  max-height: 100vh;
-}
-.Main .container {
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-}
-.Main .container .outlet {
-  flex-grow: 3;
-  padding: 1rem;
-  overflow-y: auto;
-}
-.Main .container .navigation {
-  height: 80px;
-  background-color: #15171b;
-  width: 100%;
-}
-.Main .container .navigation ul {
-  list-style: none;
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-  display: flex;
-}
-
-.Main .container .navigation ul li {
-  padding: 0px 60px;
-  height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #61dafb;
-  font-weight: bold;
-  background-color: maroon  ;
-}
-.Main .container .navigation ul li a {
-  text-decoration: none;
-  color: #61dafb;
-}
-.Main .container .navigation ul li.active a,
-.Main .container .navigation ul li:hover a {
-  text-decoration: none;
-  color: white;
-}
-.Main .container .navigation ul li.active,
-.Main .container .navigation ul li:hover {
-  background: #353a43;
-}
-.Main .container .navigation ul li a {
-  text-decoration: none;
-}
-
-.Main .container .navigation ul li.logout,
-.Main .container .navigation ul li.login {
-  cursor: pointer;
-  justify-self: end;
-}
-
-
 body {
-  background-color: #252424;
+  background-color: #1e1e1e; /* Darker background for better contrast */
   margin: 0; 
   padding: 0; 
   display: flex;
   justify-content: center;
   align-items: center; 
   height: 100vh;
-  color: white;
+  color: #f0f0f0; /* Lighter text color for better readability */
+  font-family: 'Arial', sans-serif; /* Modern font */
+}
+
+.Main {
+  display: flex;
+  overflow: hidden;
+  max-height: 100vh;
+  width: 100vw; /* Ensure full width */
+}
+
+.Main .container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  border-radius: 8px; /* Rounded corners for a softer look */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  background-color: #2a2a2a; /* Slightly lighter background for the container */
+}
+
+.Main .container .outlet {
+  flex-grow: 3;
+  padding: 1.5rem; /* Increased padding for better spacing */
+  overflow-y: auto;
+}
+
+.Main .container .navigation {
+  height: 80px;
+  background-color: #3b3b3b; /* Darker navigation bar */
+  width: 100%;
+  display: flex;
+  align-items: center; /* Center items vertically */
+}
+
+.Main .container .navigation ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-around; /* Space items evenly */
+  width: 100%;
+}
+
+.Main .container .navigation ul li {
+  padding: 0 30px; /* Reduced padding for a more compact look */
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #61dafb; /* Bright color for links */
+  font-weight: bold;
+  transition: background 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.Main .container .navigation ul li a {
+  text-decoration: none;
+  color: inherit; /* Inherit color from li */
+}
+
+.Main .container .navigation ul li.active a,
+.Main .container .navigation ul li:hover a {
+  color: #ffffff; /* White text on hover */
+}
+
+.Main .container .navigation ul li.active,
+.Main .container .navigation ul li:hover {
+  background: #4a4a4a; /* Slightly lighter background on hover */
+  border-radius: 4px; /* Rounded corners on hover */
+}
+
+.Main .container .navigation ul li.logout,
+.Main .container .navigation ul li.login {
+  cursor: pointer;
+  justify-self: end;
 }
