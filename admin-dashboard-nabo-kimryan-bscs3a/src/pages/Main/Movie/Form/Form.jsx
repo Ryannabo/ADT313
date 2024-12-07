@@ -151,6 +151,32 @@ const handleSelectMovie = (movie) => {
     }
   }, [selectedMovie]);
 
+  useEffect(() => {
+    if (selectedMovie) {
+      // Fetch Images (Backdrops and Posters)
+      axios
+        .get(`https://api.themoviedb.org/3/movie/${selectedMovie.id}/images`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc", // Replace with actual API key
+          },
+        })
+        .then((response) => {
+          const { backdrops = [], posters = [] } = response.data; // Add default empty arrays
+          const combinedPhotos = [...backdrops, ...posters]; // Safely combine
+          setPhotos(combinedPhotos);
+  
+          // Ensure only valid file paths are added
+          const validBackdrops = backdrops.filter((img) => img.file_path);
+          setPhotos(validBackdrops); // Set backdrops only
+        })
+        .catch(() => {
+          setError("Unable to load movie images. Please try again later.");
+        });
+    }
+  }, [selectedMovie]); // This will trigger when a new movie is selected
+  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
