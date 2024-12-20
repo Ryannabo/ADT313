@@ -21,11 +21,16 @@ const Form = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [description, setDescription] = useState("");
   const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState([]);
   const [photos, setPhotos] = useState([]);
+  const [selectedPhoto, setSelectedPhoto] = useState(undefined);
+  const [newVideoUrl, setNewVideoUrl] = useState("");
   const [cast, setCast] = useState([]);
+  
 
-  const { movieId } = useParams();
+  let { movieId } = useParams();
   const navigate = useNavigate();
 
   const handleSearch = useCallback(() => {
@@ -127,24 +132,41 @@ const handleSelectMovie = (movie,cast) => {
         .get(`https://api.themoviedb.org/3/movie/${selectedMovie.id}/images`, {
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc", // Replace with actual API key
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc", 
           },
         })
         .then((response) => {
-          const { backdrops = [], posters = [] } = response.data; // Add default empty arrays
-          const combinedPhotos = [...backdrops, ...posters]; // Safely combine
+          const { backdrops = [], posters = [] } = response.data; 
+          const combinedPhotos = [...backdrops, ...posters]; 
           setPhotos(combinedPhotos);
   
           // Ensure only valid file paths are added
           const validBackdrops = backdrops.filter((img) => img.file_path);
-          setPhotos(validBackdrops); // Set backdrops only
+          setPhotos(validBackdrops); 
         })
         .catch(() => {
           setError("Unable to load movie images. Please try again later.");
         });
     }
-  }, [selectedMovie]); // This will trigger when a new movie is selected
+  }, [selectedMovie]); 
   
+  useEffect(() => {
+    if (selectedMovie) {
+      // Fetch Videos
+      axios.get(`https://api.themoviedb.org/3/movie/${selectedMovie.id}/videos?language=en-US`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMzI0NGJiNGQ0YzE3N2E5ZmJlZTVjMzllMmRmMjk1OCIsIm5iZiI6MTczMzI5NzU5Mi40MDksInN1YiI6IjY3NTAwNWI4MzU1ZGJjMGIxNWQ3YTU1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7tYsdAfG9aER__syoCcKyJlPd7O5yMRyv4GOVfajKLc', 
+        },
+      })
+      .then(response => {
+        setVideos(response.data.results); 
+      })
+      .catch(() => {
+        setError("Unable to load videos. Please try again later.");
+      });
+    }
+  }, [selectedMovie]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -204,7 +226,100 @@ const handleSelectMovie = (movie,cast) => {
     };
 
     try {
-      await axios({
+
+      const handleAddVideo = async (movieId2) => {
+        console.log(movieId2);
+        console.log(movieId);
+    
+        // If no videos are found, proceed with empty fields in videoData
+    
+        const accessToken = localStorage.getItem("accessToken");
+        const videoData = {
+          movieId: movieId ? movieId : movieId2, 
+          url: selectedVideo?.key
+            ? `https://www.youtube.com/embed/${selectedVideo.key}`
+            : "https://www.youtube.com/embed/not_available", 
+          name: selectedVideo?.name || "No video selected", 
+          site: selectedVideo?.site || "YouTube", 
+          videoKey: selectedVideo?.key || "not_available", 
+          videoType: selectedVideo?.type || "placeholder", 
+          official: selectedVideo?.official || false, 
+        };
+    
+        console.log(videoData);
+    
+        try {
+          const response = await axios({
+            method: movieId ? "patch" : "post",
+            url: movieId ? `/videos/${movieId}` : "/videos",
+            data: videoData,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          console.log("Video added successfully:", response.data);
+          alert("Video added successfully!");
+          return true; 
+        } catch (error) {
+          console.error("Error adding video:", error);
+          alert("Failed to add video. Please try again.");
+          return false; 
+        }
+      };
+      
+      const handleAddPhotos = async (movieId2) => {
+        const accessToken = localStorage.getItem("accessToken");
+      
+        if (!selectedPhoto || !selectedPhoto.file_path) {
+          alert("Please select a valid photo to add.");
+          return false; // Exit early on invalid input
+        }
+      
+        // Prepare data to be sent to the backend
+        const photoData = {
+          movieId: movieId || movieId2,
+          url: selectedPhoto.file_path, 
+          description: description || "No description provided", 
+        };
+      
+        // Determine the URL endpoint and HTTP method
+        const url = movieId ? `/photos/${movieId}` : "/photos";
+        const method = movieId ? "patch" : "post";
+      
+        try {
+          // Send the HTTP request to add or update a photo
+          const response = await axios({
+            method,
+            url,
+            data: photoData,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+      
+          console.log("Photo added successfully:", response.data);
+          alert("Photo added successfully!");
+          return true; // Indicate success
+        } catch (error) {
+          console.error("Error adding photo:", error);
+      
+          // Handle errors with appropriate messages
+          if (error.response) {
+            alert(
+              `Failed to add photo. Server responded with: ${
+                error.response.data.message || error.response.status
+              }`
+            );
+          } else if (error.request) {
+            alert("Failed to add photo. No response from the server.");
+          } else {
+            alert(`An error occurred: ${error.message}`);
+          }
+          return false; // Indicate failure
+        }
+      };
+      
+      const response = await axios({
         method: movieId ? "patch" : "post",
         url: movieId ? `/movies/${movieId}` : "/movies",
         data: data,
@@ -212,6 +327,22 @@ const handleSelectMovie = (movie,cast) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      const newMovieId = movieId || response.data.id; 
+      
+      console.log("Movie saved successfully:", response.data);
+      alert("Movie saved successfully!");
+
+      // Proceed to add the video
+      const isVideoAdded = await handleAddVideo(newMovieId); 
+      if (!isVideoAdded) {
+        alert("Video could not be added. Please try again.");
+        return;
+      }
+      const isPhotoAdded = await handleAddPhotos(newMovieId);
+      if (!isPhotoAdded) {
+        alert("Photo could not be added. Please try again.");
+        return;
+      }
       navigate("/main/movies");
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Unable to save the movie. Please try again later.";
@@ -432,26 +563,51 @@ const handleSelectMovie = (movie,cast) => {
     </div>
   </div>
 )}
+
           {selectedMovie && (
   <>
-    <h2>Videos</h2>
-    <div className="videos">
-      {videos.length > 0 ? (
-        videos.map(video => (
-          <div key={video.id} className="video-item">
-            <h3>{video.name}</h3>
+
+<h2>Videos</h2>
+
+<div className="videosMainCont">
+  {videos && videos.length > 0 ? (
+    videos.map((video) => (
+      <div className="videosCont" key={video.id}>
+        <p>{video.name}</p>
+        <div className="videolist">
+          <div className="video-preview">
+            {/* Assuming the video.key is the unique identifier for a YouTube video */}
             <iframe
+              width="280"
+              height="158"
               src={`https://www.youtube.com/embed/${video.key}`}
               title={video.name}
               frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
           </div>
-        ))
-      ) : (
-        <p>No videos available.</p>
-      )}
-    </div>
+          <button
+            onClick={() => {
+              setSelectedVideo(video);
+              alert("Successfully selected a video!");
+            }}
+          >
+            Select Video
+          </button>
+        </div>
+
+        {/* <div>
+          <button type="button" onClick={handleAddVideo}>
+            Add Video
+          </button>
+        </div> */}
+      </div>
+    ))
+  ) : (
+    <p>No videos found</p>
+  )}
+</div>
 
           <h2>Cast</h2>
           <div className="cast">
