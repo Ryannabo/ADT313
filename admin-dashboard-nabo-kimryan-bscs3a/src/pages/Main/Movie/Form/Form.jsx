@@ -95,8 +95,6 @@ const handleSelectMovie = (movie,cast) => {
     popularity: movie.popularity,
     releaseDate: movie.release_date,
     voteAverage: movie.vote_average,
-    url: cast.url,
-    characterName: cast.characterName,
   });
   setError("");
   // Fetch Photos

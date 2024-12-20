@@ -1,20 +1,20 @@
 body {
-  background-color: #1e1e1e; /* Darker background for better contrast */
+  background-color: #1e1e1e; 
   margin: 0; 
   padding: 0; 
   display: flex;
   justify-content: center;
   align-items: center; 
   height: 100vh;
-  color: #f0f0f0; /* Lighter text color for better readability */
-  font-family: 'Arial', sans-serif; /* Modern font */
+  color: #f0f0f0; 
+  font-family: 'Arial', sans-serif; 
 }
 
 .Main {
   display: flex;
   overflow: hidden;
   max-height: 100vh;
-  width: 100vw; /* Ensure full width */
+  width: 100vw; 
 }
 
 .Main .container {
@@ -22,23 +22,23 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  border-radius: 8px; /* Rounded corners for a softer look */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-  background-color: #2a2a2a; /* Slightly lighter background for the container */
+  border-radius: 8px; 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+  background-color: #2a2a2a;
 }
 
 .Main .container .outlet {
   flex-grow: 3;
-  padding: 1.5rem; /* Increased padding for better spacing */
+  padding: 1.5rem; 
   overflow-y: auto;
 }
 
 .Main .container .navigation {
   height: 80px;
-  background-color: #3b3b3b; /* Darker navigation bar */
+  background-color: #3b3b3b; 
   width: 100%;
   display: flex;
-  align-items: center; /* Center items vertically */
+  align-items: center; 
 }
 
 .Main .container .navigation ul {
@@ -46,36 +46,36 @@ body {
   padding: 0;
   margin: 0;
   display: flex;
-  justify-content: space-around; /* Space items evenly */
+  justify-content: space-around; 
   width: 100%;
 }
 
 .Main .container .navigation ul li {
-  padding: 0 30px; /* Reduced padding for a more compact look */
+  padding: 0 30px; 
   height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #61dafb; /* Bright color for links */
+  color: #61dafb; 
   font-weight: bold;
-  transition: background 0.3s ease; /* Smooth transition for hover effects */
+  transition: background 0.3s ease; 
 }
 
 .Main .container .navigation ul li a {
   text-decoration: none;
-  color: inherit; /* Inherit color from li */
+  color: inherit; 
 }
 
 .Main .container .navigation ul li.active a,
 .Main .container .navigation ul li:hover a {
-  color: #ffffff; /* White text on hover */
+  color: #ffffff;
 }
 
 .Main .container .navigation ul li.active,
 .Main .container .navigation ul li:hover {
-  background: #4a4a4a; /* Slightly lighter background on hover */
-  border-radius: 4px; /* Rounded corners on hover */
+  background: #4a4a4a; 
+  border-radius: 4px;
 }
 
 .Main .container .navigation ul li.logout,

@@ -1,5 +1,5 @@
 .Register{
-  background-color: #252424;
+  background: #3b3b3b;
 }
 
 .web-title {
@@ -12,12 +12,13 @@
   color: aliceblue;
 }
 
-.login-label{
+.web-label{
   transform: translate(0px,-15px);
   font-weight: 200%;
   font-size: 30px;
   margin-bottom: 0px;
   margin-top: -40px;
+  color: #3b3b3b;
 }
 
 .form-group2 {
@@ -39,7 +40,7 @@
 }
 
 .errors {
-  color: #444;
+  color: #3b3b3b;
   font-size: 0.875rem;
   font-weight: bold;
 }
@@ -51,11 +52,11 @@
 
 .login-container {
   text-align: center;
-  color: #666;
+  color: #3b3b3b;
 }
 
 .show-password {
   margin-bottom: 1.5rem; 
   cursor: pointer;
-  color: #555; 
+  color: #3b3b3b; 
 }

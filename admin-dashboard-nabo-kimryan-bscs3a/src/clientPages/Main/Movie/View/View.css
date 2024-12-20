@@ -2,16 +2,18 @@
 
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #f4f4f4;
+  background: #3b3b3b;
+  color: white;
   margin: 0;
   padding: 0;
 }
 
 .movie-details-container {
   max-width: 1200px;
+  color: white;
   margin: 20px auto;
   padding: 20px;
-  background-color: #fff;
+  background: #3b3b3b;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -36,7 +38,7 @@ body {
 .movie-title {
   font-size: 2.5rem;
   margin: 0;
-  color: #333;
+  color: white;
 }
 
 .movie-info {
@@ -61,7 +63,7 @@ body {
 .movie-overview p {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #555;
+  color: white;
 }
 
 .section {
@@ -71,7 +73,7 @@ body {
 .section-title {
   font-size: 1.8rem;
   margin-bottom: 10px;
-  color: #333;
+  color: white;
 }
 
 .cast-list, .crew-list, .photos-list, .videos-list {
@@ -100,25 +102,26 @@ body {
 
 .member-name {
   font-weight: bold;
-  color: #333;
+  color: #3b3b3b;
 }
 
 .member-role {
-  color: #777;
+  color: #3b3b3b;
 }
 
 .show-more-button {
-  background-color: #007bff;
+  background-color: maroon;
   color: white;
   border: none;
   border-radius: 5px;
   padding: 8px 12px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-top: 20px;
 }
 
 .show-more-button:hover {
-  background-color: #0056b3;
+  background-color: red;
 }
 
 .photos-section, .videos-section {
